@@ -1,0 +1,13 @@
+{
+  "name": "guazviolin-security-review",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Security review of guazviolin.com with sanitized fixes and runnable handler tests.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
