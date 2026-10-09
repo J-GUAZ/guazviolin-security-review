@@ -1,10 +1,14 @@
 # Security Review: guazviolin.com
 
-An OWASP-based security review of [guazviolin.com](https://guazviolin.com), a live booking site
-for my violin performance business. The site takes event inquiries from the public, stores them
-in a database, emails me a notification, and gives me a private admin CRM to manage leads.
+I reviewed the security of [guazviolin.com](https://guazviolin.com), the live booking website for
+my violin business, and found four problems, including a way for anyone on the internet to send
+emails into my inbox through the site. I fixed all four, wrote tests proving each fix works, and
+deployed the fixes in October 2026. This repo is the write-up, with sanitized before/after code.
 
-**Result:** 4 findings (2 Medium, 2 Low). All fixed, verified, and deployed in October 2026.
+**Result:** 4 findings (2 Medium, 2 Low). All fixed, verified, and deployed.
+
+The site takes event inquiries from the public, stores them in a database, emails me a
+notification, and gives me a private admin CRM to manage leads.
 
 | | |
 |---|---|
@@ -102,6 +106,8 @@ the old code was exploitable:
 
 A live request to the deployed endpoint with a fake lead ID was also refused, and no email was sent.
 
+![npm test output: all 5 handler cases and both regression tests pass](images/test-results.png)
+
 ## Finding 2: Anonymous insert rule allowed any values (Medium)
 
 **What happened.** The Postgres RLS policy that lets the public booking form create leads was
@@ -134,6 +140,8 @@ could embed it in an invisible iframe, including the admin CRM login.
 [Full before/after →](fixes/03-security-headers)
 
 **Verification.** `curl -I https://guazviolin.com` shows all five headers in production.
+
+![Before/after table of security headers on guazviolin.com](images/security-headers.png)
 
 ## Finding 4: Vulnerable build-tool dependencies (Low)
 
@@ -169,17 +177,7 @@ Requires Node.js 20+. No dependencies to install. Supabase and the email API are
 npm test
 ```
 
-```
-✔ 1. no service key configured -> 503 and no email
-✔ 2. invalid service key (database rejects it) -> 503 and no email
-✔ 3. lead id not in the database -> 404 and no email
-✔ 4. real lead -> 200, one email built from the STORED lead, lead marked notified
-✔ 5. lead already notified -> 200 but no second email
-✔ regression: BEFORE fix, no service key relays attacker content into the inbox
-✔ regression: BEFORE fix, invalid service key relays attacker content into the inbox
-ℹ tests 7
-ℹ pass 7
-```
+Expected output is shown in the screenshot under Finding 1 (7 tests, 7 passing).
 
 ## Repository layout
 
@@ -187,7 +185,8 @@ npm test
 .
 ├── README.md            this report
 ├── fixes/               sanitized before/after code for each finding
-└── tests/               runnable handler tests (Node built-in test runner, mocked fetch)
+├── tests/               runnable handler tests (Node built-in test runner, mocked fetch)
+└── images/              screenshots used in this report
 ```
 
 ## A note on AI assistance
